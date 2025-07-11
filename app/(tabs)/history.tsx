@@ -1,22 +1,16 @@
-import { Button, StyleSheet } from "react-native";
-
 import { Text, View } from "@/components/Themed";
+import { StyleSheet } from "react-native";
 
-export default function TabOneScreen() {
+export default function HistoryScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Timers</Text>
+      <Text style={styles.title}>Timer History</Text>
       <View
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <Button
-        title="Add Timer"
-        onPress={() => {
-          /* Add timer logic */
-        }}
-      />
+      {/* History items will be listed here */}
     </View>
   );
 }
