@@ -7,13 +7,13 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Switch,
   TextInput,
 } from "react-native";
 
-import { Text, View } from "react-native";
 import { useToast } from "@/contexts/ToastContext";
+import { modalStyles } from "@/utils/styles";
+import { Text, View } from "react-native";
 
 interface Timer {
   id: string;
@@ -74,14 +74,14 @@ export default function AddTimerModal() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Add New Timer</Text>
+    <ScrollView style={modalStyles.container}>
+      <View style={modalStyles.formContainer}>
+        <Text style={modalStyles.title}>Add New Timer</Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Timer Name</Text>
+        <View style={modalStyles.inputContainer}>
+          <Text style={modalStyles.label}>Timer Name</Text>
           <TextInput
-            style={styles.input}
+            style={modalStyles.input}
             value={name}
             onChangeText={setName}
             placeholder="e.g., Workout Timer"
@@ -89,10 +89,10 @@ export default function AddTimerModal() {
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Duration (seconds)</Text>
+        <View style={modalStyles.inputContainer}>
+          <Text style={modalStyles.label}>Duration (seconds)</Text>
           <TextInput
-            style={styles.input}
+            style={modalStyles.input}
             value={duration}
             onChangeText={setDuration}
             placeholder="e.g., 300"
@@ -101,22 +101,22 @@ export default function AddTimerModal() {
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Category</Text>
-          <View style={styles.categoryContainer}>
+        <View style={modalStyles.inputContainer}>
+          <Text style={modalStyles.label}>Category</Text>
+          <View style={modalStyles.categoryContainer}>
             {CATEGORIES.map((cat) => (
               <Pressable
                 key={cat}
                 style={[
-                  styles.categoryButton,
-                  category === cat && styles.categoryButtonSelected,
+                  modalStyles.categoryButton,
+                  category === cat && modalStyles.categoryButtonSelected,
                 ]}
                 onPress={() => setCategory(cat)}
               >
                 <Text
                   style={[
-                    styles.categoryButtonText,
-                    category === cat && styles.categoryButtonTextSelected,
+                    modalStyles.categoryButtonText,
+                    category === cat && modalStyles.categoryButtonTextSelected,
                   ]}
                 >
                   {cat}
@@ -126,11 +126,11 @@ export default function AddTimerModal() {
           </View>
         </View>
 
-        <View style={styles.inputContainer}>
-          <View style={styles.switchContainer}>
-            <View style={styles.switchLabelContainer}>
-              <Text style={styles.label}>Halfway Alert</Text>
-              <Text style={styles.switchDescription}>
+        <View style={modalStyles.inputContainer}>
+          <View style={modalStyles.switchContainer}>
+            <View style={modalStyles.switchLabelContainer}>
+              <Text style={modalStyles.label}>Halfway Alert</Text>
+              <Text style={modalStyles.switchDescription}>
                 Get notified when 50% of timer duration is reached
               </Text>
             </View>
@@ -144,12 +144,12 @@ export default function AddTimerModal() {
           </View>
         </View>
 
-        <View style={styles.buttonContainer}>
-          <Pressable style={styles.button} onPress={() => router.back()}>
-            <Text style={styles.buttonText}>Cancel</Text>
+        <View style={modalStyles.buttonContainer}>
+          <Pressable style={modalStyles.button} onPress={() => router.back()}>
+            <Text style={modalStyles.buttonText}>Cancel</Text>
           </Pressable>
-          <Pressable style={styles.button} onPress={saveTimer}>
-            <Text style={styles.buttonText}>Save Timer</Text>
+          <Pressable style={modalStyles.button} onPress={saveTimer}>
+            <Text style={modalStyles.buttonText}>Save Timer</Text>
           </Pressable>
         </View>
       </View>
@@ -158,104 +158,3 @@ export default function AddTimerModal() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#000000",
-  },
-  formContainer: {
-    flex: 1,
-    paddingTop: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 40,
-    color: "#ffffff",
-  },
-  inputContainer: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#ffffff",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#333333",
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    backgroundColor: "#111111",
-    color: "#ffffff",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 40,
-    gap: 16,
-  },
-  button: {
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
-    flex: 1,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#000000",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  categoryContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 8,
-  },
-  categoryButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#333333",
-    backgroundColor: "#111111",
-    alignItems: "center",
-    minWidth: 80,
-  },
-  categoryButtonSelected: {
-    borderColor: "#FFFFFF",
-    backgroundColor: "#333333",
-  },
-  categoryButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  categoryButtonTextSelected: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-  switchContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  switchLabelContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
-  switchDescription: {
-    fontSize: 12,
-    color: "#888888",
-    marginTop: 4,
-    lineHeight: 16,
-  },
-});

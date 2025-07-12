@@ -3,10 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import * as Notifications from "expo-notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet } from "react-native";
+import { Alert, Pressable, ScrollView } from "react-native";
 
-import { Text, View } from "react-native";
 import { useToast } from "@/contexts/ToastContext";
+import { indexStyles } from "@/utils/styles";
+import { Text, View } from "react-native";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -499,15 +500,15 @@ export default function TimersScreen() {
 
   if (Object.keys(groupedTimers).length === 0) {
     return (
-      <View style={styles.container}>
+      <View style={indexStyles.container}>
         {/* Filter Dropdown Toggle */}
-        <View style={styles.filterSection}>
+        <View style={indexStyles.filterSection}>
           <Pressable
-            style={styles.filterToggle}
+            style={indexStyles.filterToggle}
             onPress={() => setShowFilterDropdown(!showFilterDropdown)}
           >
             <Ionicons name="funnel" size={16} color="#ffffff" />
-            <Text style={styles.filterToggleText}>
+            <Text style={indexStyles.filterToggleText}>
               {categoryFilter === "All" ? "All Categories" : categoryFilter}
             </Text>
             <Ionicons
@@ -520,11 +521,11 @@ export default function TimersScreen() {
           {/* Notification Permission Status */}
           {!notificationPermission && (
             <Pressable
-              style={styles.notificationWarning}
+              style={indexStyles.notificationWarning}
               onPress={requestNotificationPermissions}
             >
               <Ionicons name="notifications-off" size={14} color="#ff6b6b" />
-              <Text style={styles.notificationWarningText}>
+              <Text style={indexStyles.notificationWarningText}>
                 Tap to enable notifications for timer alerts
               </Text>
             </Pressable>
@@ -535,14 +536,15 @@ export default function TimersScreen() {
             <>
               {/* Backdrop */}
               <Pressable
-                style={styles.backdrop}
+                style={indexStyles.backdrop}
                 onPress={() => setShowFilterDropdown(false)}
               />
-              <View style={styles.filterDropdown}>
+              <View style={indexStyles.filterDropdown}>
                 <Pressable
                   style={[
-                    styles.filterOption,
-                    categoryFilter === "All" && styles.filterOptionSelected,
+                    indexStyles.filterOption,
+                    categoryFilter === "All" &&
+                      indexStyles.filterOptionSelected,
                   ]}
                   onPress={() => applyFilter("All")}
                 >
@@ -553,9 +555,9 @@ export default function TimersScreen() {
                   />
                   <Text
                     style={[
-                      styles.filterOptionText,
+                      indexStyles.filterOptionText,
                       categoryFilter === "All" &&
-                        styles.filterOptionTextSelected,
+                        indexStyles.filterOptionTextSelected,
                     ]}
                   >
                     All Categories
@@ -569,9 +571,9 @@ export default function TimersScreen() {
                   <Pressable
                     key={category}
                     style={[
-                      styles.filterOption,
+                      indexStyles.filterOption,
                       categoryFilter === category &&
-                        styles.filterOptionSelected,
+                        indexStyles.filterOptionSelected,
                     ]}
                     onPress={() => applyFilter(category)}
                   >
@@ -584,9 +586,9 @@ export default function TimersScreen() {
                     />
                     <Text
                       style={[
-                        styles.filterOptionText,
+                        indexStyles.filterOptionText,
                         categoryFilter === category &&
-                          styles.filterOptionTextSelected,
+                          indexStyles.filterOptionTextSelected,
                       ]}
                     >
                       {category}
@@ -599,11 +601,13 @@ export default function TimersScreen() {
 
                 {categoryFilter !== "All" && (
                   <Pressable
-                    style={styles.clearFilterOption}
+                    style={indexStyles.clearFilterOption}
                     onPress={clearFilter}
                   >
                     <Ionicons name="close" size={14} color="#ff6b6b" />
-                    <Text style={styles.clearFilterText}>Clear Filter</Text>
+                    <Text style={indexStyles.clearFilterText}>
+                      Clear Filter
+                    </Text>
                   </Pressable>
                 )}
               </View>
@@ -611,12 +615,12 @@ export default function TimersScreen() {
           )}
         </View>
 
-        <Text style={styles.emptyText}>
+        <Text style={indexStyles.emptyText}>
           {categoryFilter === "All"
             ? "No timers yet!"
             : `No timers in "${categoryFilter}" category`}
         </Text>
-        <Text style={styles.emptySubText}>
+        <Text style={indexStyles.emptySubText}>
           {categoryFilter === "All"
             ? "Tap the + button to create your first timer"
             : "Clear the filter or add timers to this category"}
@@ -626,15 +630,15 @@ export default function TimersScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={indexStyles.container}>
       {/* Filter Dropdown Toggle */}
-      <View style={styles.filterSection}>
+      <View style={indexStyles.filterSection}>
         <Pressable
-          style={styles.filterToggle}
+          style={indexStyles.filterToggle}
           onPress={() => setShowFilterDropdown(!showFilterDropdown)}
         >
           <Ionicons name="funnel" size={16} color="#ffffff" />
-          <Text style={styles.filterToggleText}>
+          <Text style={indexStyles.filterToggleText}>
             {categoryFilter === "All" ? "All Categories" : categoryFilter}
           </Text>
           <Ionicons
@@ -647,11 +651,11 @@ export default function TimersScreen() {
         {/* Notification Permission Status */}
         {!notificationPermission && (
           <Pressable
-            style={styles.notificationWarning}
+            style={indexStyles.notificationWarning}
             onPress={requestNotificationPermissions}
           >
             <Ionicons name="notifications-off" size={14} color="#ff6b6b" />
-            <Text style={styles.notificationWarningText}>
+            <Text style={indexStyles.notificationWarningText}>
               Tap to enable notifications for timer alerts
             </Text>
           </Pressable>
@@ -662,14 +666,14 @@ export default function TimersScreen() {
           <>
             {/* Backdrop */}
             <Pressable
-              style={styles.backdrop}
+              style={indexStyles.backdrop}
               onPress={() => setShowFilterDropdown(false)}
             />
-            <View style={styles.filterDropdown}>
+            <View style={indexStyles.filterDropdown}>
               <Pressable
                 style={[
-                  styles.filterOption,
-                  categoryFilter === "All" && styles.filterOptionSelected,
+                  indexStyles.filterOption,
+                  categoryFilter === "All" && indexStyles.filterOptionSelected,
                 ]}
                 onPress={() => applyFilter("All")}
               >
@@ -680,8 +684,9 @@ export default function TimersScreen() {
                 />
                 <Text
                   style={[
-                    styles.filterOptionText,
-                    categoryFilter === "All" && styles.filterOptionTextSelected,
+                    indexStyles.filterOptionText,
+                    categoryFilter === "All" &&
+                      indexStyles.filterOptionTextSelected,
                   ]}
                 >
                   All Categories
@@ -695,8 +700,9 @@ export default function TimersScreen() {
                 <Pressable
                   key={category}
                   style={[
-                    styles.filterOption,
-                    categoryFilter === category && styles.filterOptionSelected,
+                    indexStyles.filterOption,
+                    categoryFilter === category &&
+                      indexStyles.filterOptionSelected,
                   ]}
                   onPress={() => applyFilter(category)}
                 >
@@ -707,9 +713,9 @@ export default function TimersScreen() {
                   />
                   <Text
                     style={[
-                      styles.filterOptionText,
+                      indexStyles.filterOptionText,
                       categoryFilter === category &&
-                        styles.filterOptionTextSelected,
+                        indexStyles.filterOptionTextSelected,
                     ]}
                   >
                     {category}
@@ -722,11 +728,11 @@ export default function TimersScreen() {
 
               {categoryFilter !== "All" && (
                 <Pressable
-                  style={styles.clearFilterOption}
+                  style={indexStyles.clearFilterOption}
                   onPress={clearFilter}
                 >
                   <Ionicons name="close" size={14} color="#ff6b6b" />
-                  <Text style={styles.clearFilterText}>Clear Filter</Text>
+                  <Text style={indexStyles.clearFilterText}>Clear Filter</Text>
                 </Pressable>
               )}
             </View>
@@ -735,14 +741,14 @@ export default function TimersScreen() {
       </View>
 
       {Object.entries(groupedTimers).map(([category, categoryTimers]) => (
-        <View key={category} style={styles.categoryContainer}>
+        <View key={category} style={indexStyles.categoryContainer}>
           <Pressable
-            style={styles.categoryHeader}
+            style={indexStyles.categoryHeader}
             onPress={() => toggleCategory(category)}
           >
-            <View style={styles.categoryHeaderContent}>
-              <Text style={styles.categoryTitle}>{category}</Text>
-              <Text style={styles.categoryCount}>
+            <View style={indexStyles.categoryHeaderContent}>
+              <Text style={indexStyles.categoryTitle}>{category}</Text>
+              <Text style={indexStyles.categoryCount}>
                 ({categoryTimers.length})
               </Text>
             </View>
@@ -754,98 +760,110 @@ export default function TimersScreen() {
               }
               size={16}
               color="#ffffff"
-              style={styles.chevronIcon}
+              style={indexStyles.chevronIcon}
             />
           </Pressable>
 
-          <View style={styles.bulkActions}>
+          <View style={indexStyles.bulkActions}>
             <Pressable
-              style={styles.bulkButton}
+              style={indexStyles.bulkButton}
               onPress={() => bulkAction(category, "start")}
             >
-              <Text style={styles.bulkButtonText}>Start All</Text>
+              <Text style={indexStyles.bulkButtonText}>Start All</Text>
             </Pressable>
             <Pressable
-              style={styles.bulkButton}
+              style={indexStyles.bulkButton}
               onPress={() => bulkAction(category, "pause")}
             >
-              <Text style={styles.bulkButtonText}>Pause All</Text>
+              <Text style={indexStyles.bulkButtonText}>Pause All</Text>
             </Pressable>
             <Pressable
-              style={styles.bulkButton}
+              style={indexStyles.bulkButton}
               onPress={() => bulkAction(category, "reset")}
             >
-              <Text style={styles.bulkButtonText}>Reset All</Text>
+              <Text style={indexStyles.bulkButtonText}>Reset All</Text>
             </Pressable>
           </View>
 
           {!collapsedCategories.includes(category) && (
-            <View style={styles.timersContainer}>
+            <View style={indexStyles.timersContainer}>
               {categoryTimers.map((timer) => (
-                <View key={timer.id} style={styles.timerCard}>
-                  <View style={styles.timerHeader}>
-                    <View style={styles.timerInfo}>
-                      <View style={styles.timerNameContainer}>
-                        <Text style={styles.timerName}>{timer.name}</Text>
+                <View key={timer.id} style={indexStyles.timerCard}>
+                  <View style={indexStyles.timerHeader}>
+                    <View style={indexStyles.timerInfo}>
+                      <View style={indexStyles.timerNameContainer}>
+                        <Text style={indexStyles.timerName}>{timer.name}</Text>
                         {timer.halfwayAlert && (
                           <Ionicons
                             name="notifications"
                             size={14}
                             color="#888888"
-                            style={styles.alertIcon}
+                            style={indexStyles.alertIcon}
                           />
                         )}
                       </View>
-                      <Text style={styles.timerTime}>
+                      <Text style={indexStyles.timerTime}>
                         {formatTime(timer.remainingTime)}
                       </Text>
                     </View>
-                    <Text style={styles.timerStatus}>{timer.status}</Text>
+                    <Text style={indexStyles.timerStatus}>{timer.status}</Text>
                   </View>
 
                   {/* Progress Bar */}
-                  <View style={styles.progressBarContainer}>
+                  <View style={indexStyles.progressBarContainer}>
                     <View
                       style={[
-                        styles.progressBar,
+                        indexStyles.progressBar,
                         { width: `${getProgressPercentage(timer)}%` },
                       ]}
                     />
                   </View>
 
-                  <View style={styles.timerControls}>
+                  <View style={indexStyles.timerControls}>
                     {timer.status === "stopped" || timer.status === "paused" ? (
                       <Pressable
-                        style={[styles.controlButton, styles.startButton]}
+                        style={[
+                          indexStyles.controlButton,
+                          indexStyles.startButton,
+                        ]}
                         onPress={() => startTimer(timer.id)}
                       >
                         <Ionicons name="play" size={12} color="#000000" />
-                        <Text style={styles.controlButtonText}>Start</Text>
+                        <Text style={indexStyles.controlButtonText}>Start</Text>
                       </Pressable>
                     ) : timer.status === "running" ? (
                       <Pressable
-                        style={[styles.controlButton, styles.pauseButton]}
+                        style={[
+                          indexStyles.controlButton,
+                          indexStyles.pauseButton,
+                        ]}
                         onPress={() => pauseTimer(timer.id)}
                       >
                         <Ionicons name="pause" size={12} color="#000000" />
-                        <Text style={styles.controlButtonText}>Pause</Text>
+                        <Text style={indexStyles.controlButtonText}>Pause</Text>
                       </Pressable>
                     ) : null}
 
                     <Pressable
-                      style={[styles.controlButton, styles.resetButton]}
+                      style={[
+                        indexStyles.controlButton,
+                        indexStyles.resetButton,
+                      ]}
                       onPress={() => resetTimer(timer.id)}
                     >
                       <Ionicons name="refresh" size={12} color="#000000" />
-                      <Text style={styles.controlButtonText}>Reset</Text>
+                      <Text style={indexStyles.controlButtonText}>Reset</Text>
                     </Pressable>
 
                     <Pressable
-                      style={[styles.controlButton, styles.deleteButton]}
+                      style={[
+                        indexStyles.controlButton,
+                        indexStyles.deleteButton,
+                      ]}
                       onPress={() => deleteTimer(timer.id)}
                     >
                       <Ionicons name="trash" size={12} color="#ffffff" />
-                      <Text style={styles.deleteButtonText}>Delete</Text>
+                      <Text style={indexStyles.deleteButtonText}>Delete</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -857,307 +875,3 @@ export default function TimersScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#000000",
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 50,
-    color: "#ffffff",
-  },
-  emptySubText: {
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: 10,
-    color: "#888888",
-  },
-  categoryContainer: {
-    marginBottom: 16,
-    backgroundColor: "#000000",
-    borderRadius: 16,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#333333",
-  },
-  categoryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#000000",
-  },
-  categoryHeaderContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#ffffff",
-    marginRight: 8,
-  },
-  categoryCount: {
-    fontSize: 12,
-    color: "#888888",
-    backgroundColor: "#333333",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    fontWeight: "500",
-  },
-  chevronIcon: {
-    opacity: 0.8,
-  },
-  bulkActions: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
-    backgroundColor: "#000000",
-  },
-  bulkButton: {
-    backgroundColor: "#333333",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    flex: 1,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#555555",
-  },
-  bulkButtonText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  timersContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 12,
-    backgroundColor: "#000000",
-  },
-  timerCard: {
-    backgroundColor: "#000000",
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#333333",
-  },
-  timerHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  timerInfo: {
-    flex: 1,
-  },
-  timerNameContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  timerName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-    marginRight: 8,
-  },
-  alertIcon: {
-    marginLeft: 4,
-  },
-  timerTime: {
-    fontSize: 20,
-    fontWeight: "300",
-    color: "#ffffff",
-    fontFamily: "monospace",
-  },
-  timerStatus: {
-    fontSize: 11,
-    color: "#aaaaaa",
-    textTransform: "capitalize",
-    backgroundColor: "#333333",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    fontWeight: "500",
-  },
-  progressBarContainer: {
-    height: 4,
-    backgroundColor: "#333333",
-    borderRadius: 2,
-    marginVertical: 12,
-    overflow: "hidden",
-  },
-  progressBar: {
-    height: "100%",
-    backgroundColor: "#ffffff",
-    borderRadius: 2,
-  },
-  timerControls: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-  },
-  controlButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    minWidth: 70,
-    justifyContent: "center",
-    gap: 4,
-  },
-  startButton: {
-    backgroundColor: "#ffffff",
-  },
-  pauseButton: {
-    backgroundColor: "#888888",
-  },
-  resetButton: {
-    backgroundColor: "#666666",
-  },
-  deleteButton: {
-    backgroundColor: "#444444",
-  },
-  controlButtonText: {
-    color: "#000000",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  deleteButtonText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  filterIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1a1a1a",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#333333",
-  },
-  filterText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "500",
-    flex: 1,
-  },
-  filterSection: {
-    marginBottom: 16,
-    position: "relative",
-    zIndex: 1000,
-  },
-  backdrop: {
-    position: "absolute",
-    top: 0,
-    left: -16,
-    right: -16,
-    bottom: -1000,
-    zIndex: 999,
-  },
-  filterToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1a1a1a",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: "#333333",
-  },
-  filterToggleText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "500",
-    flex: 1,
-  },
-  filterDropdown: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    backgroundColor: "#1a1a1a",
-    borderRadius: 8,
-    marginTop: 4,
-    borderWidth: 1,
-    borderColor: "#333333",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    zIndex: 1001,
-  },
-  filterOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333333",
-  },
-  filterOptionSelected: {
-    backgroundColor: "#ffffff",
-  },
-  filterOptionText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "500",
-    flex: 1,
-  },
-  filterOptionTextSelected: {
-    color: "#000000",
-    fontWeight: "600",
-  },
-  clearFilterOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-    backgroundColor: "#2a1a1a",
-    borderTopWidth: 1,
-    borderTopColor: "#444444",
-  },
-  clearFilterText: {
-    color: "#ff6b6b",
-    fontSize: 14,
-    fontWeight: "500",
-    flex: 1,
-  },
-  notificationWarning: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#2a1a1a",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginTop: 8,
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#ff6b6b",
-  },
-  notificationWarningText: {
-    color: "#ff6b6b",
-    fontSize: 12,
-    fontWeight: "500",
-    flex: 1,
-  },
-});
