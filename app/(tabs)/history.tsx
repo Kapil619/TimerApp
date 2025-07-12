@@ -5,7 +5,7 @@ import * as FileSystem from "expo-file-system";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet } from "react-native";
 
-import { Text, View } from "@/components/Themed";
+import { Text, View } from "react-native";
 
 interface HistoryItem {
   id: string;

@@ -5,7 +5,7 @@ import * as Notifications from "expo-notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet } from "react-native";
 
-import { Text, View } from "@/components/Themed";
+import { Text, View } from "react-native";
 import { useToast } from "@/contexts/ToastContext";
 
 // Configure notification handler
