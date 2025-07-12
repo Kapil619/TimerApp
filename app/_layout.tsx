@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
+import { ToastProvider } from "@/contexts/ToastContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -51,14 +52,16 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", headerTitle: "Add timer" }}
-        />
-      </Stack>
-    </ThemeProvider>
+    <ToastProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: "modal", headerTitle: "Add timer" }}
+          />
+        </Stack>
+      </ThemeProvider>
+    </ToastProvider>
   );
 }

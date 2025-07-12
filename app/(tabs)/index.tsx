@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet } from "react-native";
 
 import { Text, View } from "@/components/Themed";
+import { useToast } from "@/contexts/ToastContext";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -43,6 +44,7 @@ export default function TimersScreen() {
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState(false);
+  const { showToast } = useToast();
   const timerRefs = useRef<{ [key: string]: any }>({});
   const halfwayAlerts = useRef<{ [key: string]: boolean }>({});
   const notificationIds = useRef<{
@@ -62,16 +64,11 @@ export default function TimersScreen() {
         finalStatus = status;
         console.log("Requested notification permission, result:", status);
       }
-
       const hasPermission = finalStatus === "granted";
       setNotificationPermission(hasPermission);
 
       if (!hasPermission) {
-        Alert.alert(
-          "Notification Permission",
-          "To receive timer completion and halfway alerts, please enable notifications in your device settings.",
-          [{ text: "OK" }]
-        );
+        showToast("⚠️ Enable notifications in settings for timer alerts");
       }
 
       return hasPermission;
@@ -271,14 +268,15 @@ export default function TimersScreen() {
                 newRemainingTime > 0
               ) {
                 halfwayAlerts.current[timerId] = true;
-                Alert.alert(
-                  "Halfway Alert!",
-                  `${timer.name} is halfway done! ${Math.floor(
-                    newRemainingTime / 60
-                  )}:${(newRemainingTime % 60)
-                    .toString()
-                    .padStart(2, "0")} remaining.`
-                );
+                setTimeout(() => {
+                  showToast(
+                    `🔔 ${timer.name} is halfway done! ${Math.floor(
+                      newRemainingTime / 60
+                    )}:${(newRemainingTime % 60)
+                      .toString()
+                      .padStart(2, "0")} remaining`
+                  );
+                }, 0);
               }
 
               if (newRemainingTime <= 0) {
@@ -294,7 +292,9 @@ export default function TimersScreen() {
                   remainingTime: 0,
                 };
                 saveToHistory(completedTimer);
-                Alert.alert("Timer Completed!", `${timer.name} has finished!`);
+                setTimeout(() => {
+                  showToast(`🎉 ${timer.name} completed!`);
+                }, 0);
 
                 // Remove completed timer from the list (it's already saved to history)
                 return null;

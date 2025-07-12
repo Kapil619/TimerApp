@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { Text, View } from "@/components/Themed";
+import { useToast } from "@/contexts/ToastContext";
 
 interface Timer {
   id: string;
@@ -32,6 +33,7 @@ export default function AddTimerModal() {
   const [duration, setDuration] = useState("");
   const [category, setCategory] = useState("Other");
   const [halfwayAlert, setHalfwayAlert] = useState(false);
+  const { showToast } = useToast();
 
   const saveTimer = async () => {
     if (!name.trim() || !duration.trim() || !category.trim()) {
@@ -62,8 +64,10 @@ export default function AddTimerModal() {
       timers.push(newTimer);
       await AsyncStorage.setItem("timers", JSON.stringify(timers));
 
-      Alert.alert("Success", "Timer created successfully!");
-      router.back();
+      showToast("✅ Timer created successfully!", { duration: 1500 });
+      setTimeout(() => {
+        router.back();
+      }, 2300); // Slightly longer than toast duration
     } catch (error) {
       Alert.alert("Error", "Failed to save timer");
     }
