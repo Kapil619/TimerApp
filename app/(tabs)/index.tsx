@@ -99,30 +99,33 @@ export default function TimersScreen() {
     // Start the countdown
     timerRefs.current[timerId] = setInterval(() => {
       setTimers((prevTimers) => {
-        const newTimers = prevTimers.map((timer) => {
-          if (timer.id === timerId && timer.status === "running") {
-            const newRemainingTime = timer.remainingTime - 1;
+        const newTimers = prevTimers
+          .map((timer) => {
+            if (timer.id === timerId && timer.status === "running") {
+              const newRemainingTime = timer.remainingTime - 1;
 
-            if (newRemainingTime <= 0) {
-              // Timer completed
-              clearInterval(timerRefs.current[timerId]);
-              delete timerRefs.current[timerId];
+              if (newRemainingTime <= 0) {
+                // Timer completed
+                clearInterval(timerRefs.current[timerId]);
+                delete timerRefs.current[timerId];
 
-              const completedTimer = {
-                ...timer,
-                status: "completed" as const,
-                remainingTime: 0,
-              };
-              saveToHistory(completedTimer);
-              Alert.alert("Timer Completed!", `${timer.name} has finished!`);
+                const completedTimer = {
+                  ...timer,
+                  status: "completed" as const,
+                  remainingTime: 0,
+                };
+                saveToHistory(completedTimer);
+                Alert.alert("Timer Completed!", `${timer.name} has finished!`);
 
-              return completedTimer;
+                // Remove completed timer from the list (it's already saved to history)
+                return null;
+              }
+
+              return { ...timer, remainingTime: newRemainingTime };
             }
-
-            return { ...timer, remainingTime: newRemainingTime };
-          }
-          return timer;
-        });
+            return timer;
+          })
+          .filter((timer): timer is Timer => timer !== null);
 
         // Save updated timers
         AsyncStorage.setItem("timers", JSON.stringify(newTimers));
@@ -182,7 +185,7 @@ export default function TimersScreen() {
     action: "start" | "pause" | "reset"
   ) => {
     const categoryTimers = timers.filter(
-      (timer) => timer.category === category
+      (timer) => timer.category === category && timer.status !== "completed"
     );
 
     categoryTimers.forEach((timer) => {
