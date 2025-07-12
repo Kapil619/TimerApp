@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
@@ -14,17 +13,7 @@ import {
 import { useToast } from "@/contexts/ToastContext";
 import { modalStyles } from "@/utils/styles";
 import { Text, View } from "react-native";
-
-interface Timer {
-  id: string;
-  name: string;
-  duration: number; // in seconds
-  category: string;
-  status: "stopped" | "running" | "paused" | "completed";
-  remainingTime: number;
-  originalDuration: number;
-  halfwayAlert: boolean;
-}
+import { Timer, StorageManager } from "@/utils/storageManager";
 
 const CATEGORIES = ["Workout", "Study", "Break", "Other"];
 
@@ -59,10 +48,9 @@ export default function AddTimerModal() {
     };
 
     try {
-      const existingTimers = await AsyncStorage.getItem("timers");
-      const timers = existingTimers ? JSON.parse(existingTimers) : [];
-      timers.push(newTimer);
-      await AsyncStorage.setItem("timers", JSON.stringify(timers));
+      const existingTimers = await StorageManager.loadTimers();
+      const timers = [...existingTimers, newTimer];
+      await StorageManager.saveTimers(timers);
 
       showToast("✅ Timer created successfully!", { duration: 1500 });
       setTimeout(() => {

@@ -1,43 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
-import * as Notifications from "expo-notifications";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView } from "react-native";
-
+import { useCallback, useEffect, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useToast } from "@/contexts/ToastContext";
+import { NotificationManager } from "@/utils/notificationManager";
+import { StorageManager, Timer } from "@/utils/storageManager";
 import { indexStyles } from "@/utils/styles";
-import { Text, View } from "react-native";
-
-// Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
-
-interface Timer {
-  id: string;
-  name: string;
-  duration: number;
-  category: string;
-  status: "stopped" | "running" | "paused" | "completed";
-  remainingTime: number;
-  originalDuration: number;
-  halfwayAlert: boolean;
-}
-
-interface HistoryItem {
-  id: string;
-  name: string;
-  category: string;
-  completedAt: string;
-  originalDuration: number;
-}
+import { TimerManager } from "@/utils/timerManager";
 
 export default function TimersScreen() {
   const [timers, setTimers] = useState<Timer[]>([]);
@@ -46,325 +15,56 @@ export default function TimersScreen() {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState(false);
   const { showToast } = useToast();
-  const timerRefs = useRef<{ [key: string]: any }>({});
-  const halfwayAlerts = useRef<{ [key: string]: boolean }>({});
-  const notificationIds = useRef<{
-    [key: string]: { completion?: string; halfway?: string };
-  }>({});
+
+  // Initialize managers
+  const timerManager = new TimerManager(setTimers, showToast);
+  const notificationManager = NotificationManager.getInstance();
 
   const requestNotificationPermissions = async () => {
-    try {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+    const hasPermission =
+      await notificationManager.requestNotificationPermissions();
+    setNotificationPermission(hasPermission);
 
-      console.log("Current notification permission status:", existingStatus);
-
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-        console.log("Requested notification permission, result:", status);
-      }
-      const hasPermission = finalStatus === "granted";
-      setNotificationPermission(hasPermission);
-
-      if (!hasPermission) {
-        showToast("⚠️ Enable notifications in settings for timer alerts");
-      }
-
-      return hasPermission;
-    } catch (error) {
-      console.error("Error requesting notification permissions:", error);
-      return false;
-    }
-  };
-
-  const scheduleNotification = async (
-    title: string,
-    body: string,
-    seconds: number,
-    identifier?: string
-  ) => {
-    if (!notificationPermission) {
-      const hasPermission = await requestNotificationPermissions();
-      if (!hasPermission) return null;
+    if (!hasPermission) {
+      showToast("⚠️ Enable notifications in settings for timer alerts");
     }
 
-    try {
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title,
-          body,
-          sound: true,
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: Math.max(1, seconds), // Ensure minimum 1 second
-        },
-      });
-
-      console.log(
-        `Scheduled notification: ${title} in ${seconds}s with ID: ${notificationId}`
-      );
-      return notificationId;
-    } catch (error) {
-      console.error("Failed to schedule notification:", error);
-      return null;
-    }
-  };
-
-  const cancelSpecificNotification = async (notificationId: string) => {
-    try {
-      await Notifications.cancelScheduledNotificationAsync(notificationId);
-      console.log(`Cancelled notification: ${notificationId}`);
-    } catch (error) {
-      console.error("Failed to cancel specific notification:", error);
-    }
-  };
-
-  const cancelTimerNotifications = async (timerId: string) => {
-    const timerNotifications = notificationIds.current[timerId];
-    if (timerNotifications) {
-      if (timerNotifications.completion) {
-        await cancelSpecificNotification(timerNotifications.completion);
-      }
-      if (timerNotifications.halfway) {
-        await cancelSpecificNotification(timerNotifications.halfway);
-      }
-      delete notificationIds.current[timerId];
-    }
-  };
-
-  const cancelAllNotifications = async () => {
-    try {
-      await Notifications.cancelAllScheduledNotificationsAsync();
-    } catch (error) {
-      console.error("Failed to cancel notifications:", error);
-    }
+    return hasPermission;
   };
 
   const loadTimers = async () => {
     try {
-      const storedTimers = await AsyncStorage.getItem("timers");
-      if (storedTimers) {
-        const loadedTimers = JSON.parse(storedTimers);
-        setTimers(loadedTimers);
+      const loadedTimers = await StorageManager.loadTimers();
+      setTimers(loadedTimers);
 
-        // Restart intervals for running timers
-        loadedTimers.forEach((timer: Timer) => {
-          if (timer.status === "running") {
-            // Clear any existing interval first
-            if (timerRefs.current[timer.id]) {
-              clearInterval(timerRefs.current[timer.id]);
-            }
-            startTimerInterval(timer.id);
-          }
-        });
+      // Restart intervals for running timers
+      timerManager.restartRunningTimers(loadedTimers);
 
-        // Set all categories as collapsed by default
-        const categories = [
-          ...new Set(loadedTimers.map((timer: Timer) => timer.category)),
-        ] as string[];
-        setCollapsedCategories(categories);
-      }
+      // Set all categories as collapsed by default
+      const categories = timerManager.getAvailableCategories(loadedTimers);
+      setCollapsedCategories(categories);
 
       // Load category filter
-      const savedFilter = await AsyncStorage.getItem("categoryFilter");
-      if (savedFilter) {
-        setCategoryFilter(savedFilter);
-      }
+      const savedFilter = await StorageManager.loadCategoryFilter();
+      setCategoryFilter(savedFilter);
     } catch (error) {
       console.error("Failed to load timers:", error);
     }
   };
 
-  const saveTimers = async (updatedTimers: Timer[]) => {
-    try {
-      await AsyncStorage.setItem("timers", JSON.stringify(updatedTimers));
-      setTimers(updatedTimers);
-    } catch (error) {
-      console.error("Failed to save timers:", error);
-    }
+  const startTimer = async (timerId: string) => {
+    const updatedTimers = await timerManager.startTimer(timerId, timers);
+    setTimers(updatedTimers);
   };
 
-  const saveToHistory = async (timer: Timer) => {
-    try {
-      const historyItem: HistoryItem = {
-        id: Date.now().toString(),
-        name: timer.name,
-        category: timer.category,
-        completedAt: new Date().toISOString(),
-        originalDuration: timer.originalDuration,
-      };
-
-      const existingHistory = await AsyncStorage.getItem("timerHistory");
-      const history = existingHistory ? JSON.parse(existingHistory) : [];
-      history.push(historyItem);
-      await AsyncStorage.setItem("timerHistory", JSON.stringify(history));
-    } catch (error) {
-      console.error("Failed to save to history:", error);
-    }
+  const pauseTimer = async (timerId: string) => {
+    const updatedTimers = await timerManager.pauseTimer(timerId, timers);
+    setTimers(updatedTimers);
   };
 
-  const startTimerInterval = (timerId: string) => {
-    const timer = timers.find((t) => t.id === timerId);
-    if (!timer) return;
-
-    // Cancel any existing notifications for this timer
-    cancelTimerNotifications(timerId);
-
-    // Schedule completion notification
-    if (timer.remainingTime > 0) {
-      scheduleNotification(
-        "Timer Completed!",
-        `${timer.name} has finished!`,
-        timer.remainingTime
-      ).then((notificationId) => {
-        if (notificationId) {
-          if (!notificationIds.current[timerId]) {
-            notificationIds.current[timerId] = {};
-          }
-          notificationIds.current[timerId].completion = notificationId;
-        }
-      });
-    }
-
-    // Schedule halfway notification if enabled and not already triggered
-    if (timer.halfwayAlert && !halfwayAlerts.current[timerId]) {
-      const halfwayTime = timer.originalDuration / 2;
-      const timeToHalfway = timer.remainingTime - halfwayTime;
-
-      if (timeToHalfway > 0) {
-        scheduleNotification(
-          "Halfway Alert!",
-          `${timer.name} is halfway done!`,
-          timeToHalfway
-        ).then((notificationId) => {
-          if (notificationId) {
-            if (!notificationIds.current[timerId]) {
-              notificationIds.current[timerId] = {};
-            }
-            notificationIds.current[timerId].halfway = notificationId;
-          }
-        });
-      }
-    }
-
-    // Reset halfway alert flag for this timer
-    halfwayAlerts.current[timerId] = false;
-
-    // Start the countdown
-    timerRefs.current[timerId] = setInterval(() => {
-      setTimers((prevTimers) => {
-        const newTimers = prevTimers
-          .map((timer) => {
-            if (timer.id === timerId && timer.status === "running") {
-              const newRemainingTime = timer.remainingTime - 1;
-
-              // Check for halfway alert (in-app alert only, notification already scheduled)
-              if (
-                timer.halfwayAlert &&
-                !halfwayAlerts.current[timerId] &&
-                newRemainingTime <= timer.originalDuration / 2 &&
-                newRemainingTime > 0
-              ) {
-                halfwayAlerts.current[timerId] = true;
-                setTimeout(() => {
-                  showToast(
-                    `🔔 ${timer.name} is halfway done! ${Math.floor(
-                      newRemainingTime / 60
-                    )}:${(newRemainingTime % 60)
-                      .toString()
-                      .padStart(2, "0")} remaining`
-                  );
-                }, 0);
-              }
-
-              if (newRemainingTime <= 0) {
-                // Timer completed
-                clearInterval(timerRefs.current[timerId]);
-                delete timerRefs.current[timerId];
-                delete halfwayAlerts.current[timerId];
-                delete notificationIds.current[timerId];
-
-                const completedTimer = {
-                  ...timer,
-                  status: "completed" as const,
-                  remainingTime: 0,
-                };
-                saveToHistory(completedTimer);
-                setTimeout(() => {
-                  showToast(`🎉 ${timer.name} completed!`);
-                }, 0);
-
-                // Remove completed timer from the list (it's already saved to history)
-                return null;
-              }
-
-              return { ...timer, remainingTime: newRemainingTime };
-            }
-            return timer;
-          })
-          .filter((timer): timer is Timer => timer !== null);
-
-        // Save updated timers
-        AsyncStorage.setItem("timers", JSON.stringify(newTimers));
-        return newTimers;
-      });
-    }, 1000);
-  };
-
-  const startTimer = (timerId: string) => {
-    const updatedTimers = timers.map((timer) => {
-      if (timer.id === timerId) {
-        return { ...timer, status: "running" as const };
-      }
-      return timer;
-    });
-    saveTimers(updatedTimers);
-
-    startTimerInterval(timerId);
-  };
-
-  const pauseTimer = (timerId: string) => {
-    if (timerRefs.current[timerId]) {
-      clearInterval(timerRefs.current[timerId]);
-      delete timerRefs.current[timerId];
-    }
-
-    // Cancel scheduled notifications for this specific timer
-    cancelTimerNotifications(timerId);
-
-    const updatedTimers = timers.map((timer) => {
-      if (timer.id === timerId) {
-        return { ...timer, status: "paused" as const };
-      }
-      return timer;
-    });
-    saveTimers(updatedTimers);
-  };
-
-  const resetTimer = (timerId: string) => {
-    if (timerRefs.current[timerId]) {
-      clearInterval(timerRefs.current[timerId]);
-      delete timerRefs.current[timerId];
-    }
-
-    // Cancel scheduled notifications and reset halfway alert for this specific timer
-    cancelTimerNotifications(timerId);
-    delete halfwayAlerts.current[timerId];
-
-    const updatedTimers = timers.map((timer) => {
-      if (timer.id === timerId) {
-        return {
-          ...timer,
-          status: "stopped" as const,
-          remainingTime: timer.originalDuration,
-        };
-      }
-      return timer;
-    });
-    saveTimers(updatedTimers);
+  const resetTimer = async (timerId: string) => {
+    const updatedTimers = await timerManager.resetTimer(timerId, timers);
+    setTimers(updatedTimers);
   };
 
   const deleteTimer = (timerId: string) => {
@@ -373,55 +73,29 @@ export default function TimersScreen() {
       {
         text: "Delete",
         style: "destructive",
-        onPress: () => {
-          // Clear any running interval for this timer
-          if (timerRefs.current[timerId]) {
-            clearInterval(timerRefs.current[timerId]);
-            delete timerRefs.current[timerId];
-          }
-
-          // Clean up notifications and halfway alerts for this specific timer
-          cancelTimerNotifications(timerId);
-          delete halfwayAlerts.current[timerId];
-
-          // Remove timer from the list
-          const updatedTimers = timers.filter((timer) => timer.id !== timerId);
-          saveTimers(updatedTimers);
+        onPress: async () => {
+          const updatedTimers = await timerManager.deleteTimer(timerId, timers);
+          setTimers(updatedTimers);
         },
       },
     ]);
   };
 
-  const bulkAction = (
+  const bulkAction = async (
     category: string,
     action: "start" | "pause" | "reset"
   ) => {
-    const categoryTimers = timers.filter(
-      (timer) => timer.category === category && timer.status !== "completed"
+    const updatedTimers = await timerManager.bulkAction(
+      category,
+      action,
+      timers
     );
-
-    categoryTimers.forEach((timer) => {
-      switch (action) {
-        case "start":
-          if (timer.status !== "running" && timer.status !== "completed") {
-            startTimer(timer.id);
-          }
-          break;
-        case "pause":
-          if (timer.status === "running") {
-            pauseTimer(timer.id);
-          }
-          break;
-        case "reset":
-          resetTimer(timer.id);
-          break;
-      }
-    });
+    setTimers(updatedTimers);
   };
 
   const applyFilter = async (filter: string) => {
     try {
-      await AsyncStorage.setItem("categoryFilter", filter);
+      await StorageManager.saveCategoryFilter(filter);
       setCategoryFilter(filter);
       setShowFilterDropdown(false);
     } catch (error) {
@@ -431,17 +105,12 @@ export default function TimersScreen() {
 
   const clearFilter = async () => {
     try {
-      await AsyncStorage.removeItem("categoryFilter");
+      await StorageManager.clearCategoryFilter();
       setCategoryFilter("All");
       setShowFilterDropdown(false);
     } catch (error) {
       console.error("Failed to clear filter:", error);
     }
-  };
-
-  const getAvailableCategories = () => {
-    const categories = [...new Set(timers.map((timer) => timer.category))];
-    return categories;
   };
 
   const toggleCategory = (category: string) => {
@@ -452,33 +121,12 @@ export default function TimersScreen() {
     );
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const getProgressPercentage = (timer: Timer) => {
-    return (
-      ((timer.originalDuration - timer.remainingTime) /
-        timer.originalDuration) *
-      100
-    );
-  };
-
   // Group timers by category and apply filter
-  const filteredTimers =
-    categoryFilter === "All"
-      ? timers
-      : timers.filter((timer) => timer.category === categoryFilter);
-
-  const groupedTimers = filteredTimers.reduce((acc, timer) => {
-    if (!acc[timer.category]) {
-      acc[timer.category] = [];
-    }
-    acc[timer.category].push(timer);
-    return acc;
-  }, {} as { [key: string]: Timer[] });
+  const filteredTimers = timerManager.filterTimersByCategory(
+    timers,
+    categoryFilter
+  );
+  const groupedTimers = timerManager.groupTimersByCategory(filteredTimers);
 
   useFocusEffect(
     useCallback(() => {
@@ -489,12 +137,8 @@ export default function TimersScreen() {
 
   useEffect(() => {
     return () => {
-      // Cleanup intervals on unmount
-      Object.values(timerRefs.current).forEach(clearInterval);
-      // Cleanup all notifications on unmount
-      Object.keys(notificationIds.current).forEach((timerId) => {
-        cancelTimerNotifications(timerId);
-      });
+      // Cleanup on unmount
+      timerManager.cleanup();
     };
   }, []);
 
@@ -567,7 +211,7 @@ export default function TimersScreen() {
                   )}
                 </Pressable>
 
-                {getAvailableCategories().map((category) => (
+                {timerManager.getAvailableCategories(timers).map((category) => (
                   <Pressable
                     key={category}
                     style={[
@@ -696,7 +340,7 @@ export default function TimersScreen() {
                 )}
               </Pressable>
 
-              {getAvailableCategories().map((category) => (
+              {timerManager.getAvailableCategories(timers).map((category) => (
                 <Pressable
                   key={category}
                   style={[
@@ -803,7 +447,7 @@ export default function TimersScreen() {
                         )}
                       </View>
                       <Text style={indexStyles.timerTime}>
-                        {formatTime(timer.remainingTime)}
+                        {timerManager.formatTime(timer.remainingTime)}
                       </Text>
                     </View>
                     <Text style={indexStyles.timerStatus}>{timer.status}</Text>
@@ -814,7 +458,11 @@ export default function TimersScreen() {
                     <View
                       style={[
                         indexStyles.progressBar,
-                        { width: `${getProgressPercentage(timer)}%` },
+                        {
+                          width: `${timerManager.getProgressPercentage(
+                            timer
+                          )}%`,
+                        },
                       ]}
                     />
                   </View>

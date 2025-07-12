@@ -1,38 +1,26 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import * as FileSystem from "expo-file-system";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView } from "react-native";
-
+import { HistoryItem, StorageManager } from "@/utils/storageManager";
 import { historyStyles } from "@/utils/styles";
 import { Text, View } from "react-native";
-
-interface HistoryItem {
-  id: string;
-  name: string;
-  category: string;
-  completedAt: string;
-  originalDuration: number;
-}
 
 export default function HistoryScreen() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
   const loadHistory = async () => {
     try {
-      const storedHistory = await AsyncStorage.getItem("timerHistory");
-      if (storedHistory) {
-        const parsedHistory = JSON.parse(storedHistory);
-        // Sort by completion time, newest first
-        setHistory(
-          parsedHistory.sort(
-            (a: HistoryItem, b: HistoryItem) =>
-              new Date(b.completedAt).getTime() -
-              new Date(a.completedAt).getTime()
-          )
-        );
-      }
+      const parsedHistory = await StorageManager.loadHistory();
+      // Sort by completion time, newest first
+      setHistory(
+        parsedHistory.sort(
+          (a: HistoryItem, b: HistoryItem) =>
+            new Date(b.completedAt).getTime() -
+            new Date(a.completedAt).getTime()
+        )
+      );
     } catch (error) {
       console.error("Failed to load history:", error);
     }
@@ -49,7 +37,7 @@ export default function HistoryScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              await AsyncStorage.removeItem("timerHistory");
+              await StorageManager.clearHistory();
               setHistory([]);
               Alert.alert("Success", "History cleared successfully");
             } catch (error) {
