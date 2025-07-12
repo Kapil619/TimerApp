@@ -180,6 +180,27 @@ export default function TimersScreen() {
     saveTimers(updatedTimers);
   };
 
+  const deleteTimer = (timerId: string) => {
+    Alert.alert("Delete Timer", "Are you sure you want to delete this timer?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => {
+          // Clear any running interval for this timer
+          if (timerRefs.current[timerId]) {
+            clearInterval(timerRefs.current[timerId]);
+            delete timerRefs.current[timerId];
+          }
+
+          // Remove timer from the list
+          const updatedTimers = timers.filter((timer) => timer.id !== timerId);
+          saveTimers(updatedTimers);
+        },
+      },
+    ]);
+  };
+
   const bulkAction = (
     category: string,
     action: "start" | "pause" | "reset"
@@ -330,7 +351,7 @@ export default function TimersScreen() {
                     ]}
                   >
                     All Categories
-                  </Text>{" "}
+                  </Text>
                   {categoryFilter === "All" && (
                     <Ionicons name="checkmark" size={14} color="#000000" />
                   )}
@@ -587,6 +608,14 @@ export default function TimersScreen() {
                       <Ionicons name="refresh" size={12} color="#000000" />
                       <Text style={styles.controlButtonText}>Reset</Text>
                     </Pressable>
+
+                    <Pressable
+                      style={[styles.controlButton, styles.deleteButton]}
+                      onPress={() => deleteTimer(timer.id)}
+                    >
+                      <Ionicons name="trash" size={12} color="#ffffff" />
+                      <Text style={styles.deleteButtonText}>Delete</Text>
+                    </Pressable>
                   </View>
                 </View>
               ))}
@@ -758,8 +787,16 @@ const styles = StyleSheet.create({
   resetButton: {
     backgroundColor: "#6b7280",
   },
+  deleteButton: {
+    backgroundColor: "#ef4444",
+  },
   controlButtonText: {
     color: "#000000",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  deleteButtonText: {
+    color: "#ffffff",
     fontSize: 12,
     fontWeight: "600",
   },
