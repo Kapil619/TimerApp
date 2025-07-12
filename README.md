@@ -2,7 +2,32 @@
 
 A React Native timer application built with Expo that allows users to create, manage, and track multiple customizable timers with category-based organization.
 
-## Features
+[⬇️ Download APK](https://expo.dev/accounts/kapil619/projects/TimerApp/builds/e111ee1a-b2eb-4015-abac-40ce46199edb)
+
+
+## Images
+<div align="center" >
+  <p float="left">
+    <img src="https://github.com/user-attachments/assets/f35b472f-3f1f-419f-805d-10d8221ff824" width="180" alt="Home Screen"/>&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/b4b58c83-28f4-4976-bd42-1ff6dc3c14d4" width="180" alt="Device Control Screen"/>
+    <img src="https://github.com/user-attachments/assets/2973966b-2fa5-4c96-9031-bd5dad0ff340" width="180" alt="Device Control Screen"/>
+     </p>
+     <p float="left">
+    <img src="https://github.com/user-attachments/assets/c3440fbe-0195-42f7-b173-67fad2aacdde" width="180" alt="Dashboard Screen"/>
+    <img src="https://github.com/user-attachments/assets/57e71844-2e51-41a7-8202-114b1404af60" width="180" alt="Analytics Screen"/>
+    <img src="https://github.com/user-attachments/assets/3cea6401-5037-4ff5-968b-14b8824ff0e5" width="180" alt="Analytics Screen"/>
+  </p>
+</div>
+
+
+## Development Assumptions
+- ✅ Timer Duration Input  
+- ✅ Category Creation  
+- ✅ Data Persistence  
+- ✅ Timer Accuracy  
+- ✅ Completion Handling  
+- ✅ Background Behavior  
+
 
 ### Core Features
 
@@ -15,33 +40,17 @@ A React Native timer application built with Expo that allows users to create, ma
 - **Data Persistence**: All timer data is stored locally using AsyncStorage
 
 ### Enhanced Features
-
 - **Status Tracking**: Real-time status updates (stopped, running, paused, completed)
 - **Completion Alerts**: Modal notifications when timers complete
 - **History Management**: Clear timer history functionality
 - **Clean UI**: Modern, responsive design with proper spacing and shadows
-
-## Tech Stack
-
-- **React Native**: Cross-platform mobile development
-- **Expo**: Development platform and toolchain
-- **TypeScript**: Type-safe development
-- **AsyncStorage**: Local data persistence
-- **React Navigation**: Tab-based navigation
-
-## Prerequisites
-
-- Node.js (v14 or later)
-- npm or yarn
-- Expo CLI
-- Expo Go app on your mobile device
 
 ## Installation & Setup
 
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Kapil619/TimerApp.git
    cd TimerApp
    ```
 
@@ -54,8 +63,6 @@ A React Native timer application built with Expo that allows users to create, ma
 3. **Start the development server**
 
    ```bash
-   npm start
-   # or
    npx expo start
    ```
 
@@ -88,33 +95,5 @@ A React Native timer application built with Expo that allows users to create, ma
 - See completion timestamps and original durations
 - Clear history using the "Clear" button
 
-## Project Structure
-
-```
-app/
-├── (tabs)/
-│   ├── index.tsx          # Main timers screen
-│   ├── history.tsx        # Timer history screen
-│   └── _layout.tsx        # Tab navigation layout
-├── modal.tsx              # Add timer modal
-└── _layout.tsx            # Root layout
-
-components/
-├── Themed.tsx             # Themed components
-└── ...
-
-constants/
-├── Colors.ts              # Color scheme definitions
-└── ...
-```
-
-## Development Assumptions
-
-1. **Timer Duration Input**: Users input duration in seconds for precise timing control
-2. **Category Creation**: Categories are created automatically when users enter new category names
-3. **Data Persistence**: All data is stored locally on the device using AsyncStorage
-4. **Timer Accuracy**: Timers update every second using setInterval
-5. **Completion Handling**: When timers complete, they're automatically moved to history and marked as completed
-6. **Background Behavior**: Timers continue running when the app is in the foreground; background notifications would require additional setup
 
 This project is developed as part of a coding assignment and is intended for evaluation purposes.
