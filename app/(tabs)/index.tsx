@@ -1,10 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet } from "react-native";
 
 import { Text, View } from "@/components/Themed";
+
+// Configure notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 interface Timer {
   id: string;
@@ -30,7 +42,108 @@ export default function TimersScreen() {
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState(false);
   const timerRefs = useRef<{ [key: string]: any }>({});
+  const halfwayAlerts = useRef<{ [key: string]: boolean }>({});
+  const notificationIds = useRef<{
+    [key: string]: { completion?: string; halfway?: string };
+  }>({});
+
+  const requestNotificationPermissions = async () => {
+    try {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+
+      console.log("Current notification permission status:", existingStatus);
+
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+        console.log("Requested notification permission, result:", status);
+      }
+
+      const hasPermission = finalStatus === "granted";
+      setNotificationPermission(hasPermission);
+
+      if (!hasPermission) {
+        Alert.alert(
+          "Notification Permission",
+          "To receive timer completion and halfway alerts, please enable notifications in your device settings.",
+          [{ text: "OK" }]
+        );
+      }
+
+      return hasPermission;
+    } catch (error) {
+      console.error("Error requesting notification permissions:", error);
+      return false;
+    }
+  };
+
+  const scheduleNotification = async (
+    title: string,
+    body: string,
+    seconds: number,
+    identifier?: string
+  ) => {
+    if (!notificationPermission) {
+      const hasPermission = await requestNotificationPermissions();
+      if (!hasPermission) return null;
+    }
+
+    try {
+      const notificationId = await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          sound: true,
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: Math.max(1, seconds), // Ensure minimum 1 second
+        },
+      });
+
+      console.log(
+        `Scheduled notification: ${title} in ${seconds}s with ID: ${notificationId}`
+      );
+      return notificationId;
+    } catch (error) {
+      console.error("Failed to schedule notification:", error);
+      return null;
+    }
+  };
+
+  const cancelSpecificNotification = async (notificationId: string) => {
+    try {
+      await Notifications.cancelScheduledNotificationAsync(notificationId);
+      console.log(`Cancelled notification: ${notificationId}`);
+    } catch (error) {
+      console.error("Failed to cancel specific notification:", error);
+    }
+  };
+
+  const cancelTimerNotifications = async (timerId: string) => {
+    const timerNotifications = notificationIds.current[timerId];
+    if (timerNotifications) {
+      if (timerNotifications.completion) {
+        await cancelSpecificNotification(timerNotifications.completion);
+      }
+      if (timerNotifications.halfway) {
+        await cancelSpecificNotification(timerNotifications.halfway);
+      }
+      delete notificationIds.current[timerId];
+    }
+  };
+
+  const cancelAllNotifications = async () => {
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    } catch (error) {
+      console.error("Failed to cancel notifications:", error);
+    }
+  };
 
   const loadTimers = async () => {
     try {
@@ -96,6 +209,52 @@ export default function TimersScreen() {
   };
 
   const startTimerInterval = (timerId: string) => {
+    const timer = timers.find((t) => t.id === timerId);
+    if (!timer) return;
+
+    // Cancel any existing notifications for this timer
+    cancelTimerNotifications(timerId);
+
+    // Schedule completion notification
+    if (timer.remainingTime > 0) {
+      scheduleNotification(
+        "Timer Completed!",
+        `${timer.name} has finished!`,
+        timer.remainingTime
+      ).then((notificationId) => {
+        if (notificationId) {
+          if (!notificationIds.current[timerId]) {
+            notificationIds.current[timerId] = {};
+          }
+          notificationIds.current[timerId].completion = notificationId;
+        }
+      });
+    }
+
+    // Schedule halfway notification if enabled and not already triggered
+    if (timer.halfwayAlert && !halfwayAlerts.current[timerId]) {
+      const halfwayTime = timer.originalDuration / 2;
+      const timeToHalfway = timer.remainingTime - halfwayTime;
+
+      if (timeToHalfway > 0) {
+        scheduleNotification(
+          "Halfway Alert!",
+          `${timer.name} is halfway done!`,
+          timeToHalfway
+        ).then((notificationId) => {
+          if (notificationId) {
+            if (!notificationIds.current[timerId]) {
+              notificationIds.current[timerId] = {};
+            }
+            notificationIds.current[timerId].halfway = notificationId;
+          }
+        });
+      }
+    }
+
+    // Reset halfway alert flag for this timer
+    halfwayAlerts.current[timerId] = false;
+
     // Start the countdown
     timerRefs.current[timerId] = setInterval(() => {
       setTimers((prevTimers) => {
@@ -104,10 +263,30 @@ export default function TimersScreen() {
             if (timer.id === timerId && timer.status === "running") {
               const newRemainingTime = timer.remainingTime - 1;
 
+              // Check for halfway alert (in-app alert only, notification already scheduled)
+              if (
+                timer.halfwayAlert &&
+                !halfwayAlerts.current[timerId] &&
+                newRemainingTime <= timer.originalDuration / 2 &&
+                newRemainingTime > 0
+              ) {
+                halfwayAlerts.current[timerId] = true;
+                Alert.alert(
+                  "Halfway Alert!",
+                  `${timer.name} is halfway done! ${Math.floor(
+                    newRemainingTime / 60
+                  )}:${(newRemainingTime % 60)
+                    .toString()
+                    .padStart(2, "0")} remaining.`
+                );
+              }
+
               if (newRemainingTime <= 0) {
                 // Timer completed
                 clearInterval(timerRefs.current[timerId]);
                 delete timerRefs.current[timerId];
+                delete halfwayAlerts.current[timerId];
+                delete notificationIds.current[timerId];
 
                 const completedTimer = {
                   ...timer,
@@ -152,6 +331,9 @@ export default function TimersScreen() {
       delete timerRefs.current[timerId];
     }
 
+    // Cancel scheduled notifications for this specific timer
+    cancelTimerNotifications(timerId);
+
     const updatedTimers = timers.map((timer) => {
       if (timer.id === timerId) {
         return { ...timer, status: "paused" as const };
@@ -166,6 +348,10 @@ export default function TimersScreen() {
       clearInterval(timerRefs.current[timerId]);
       delete timerRefs.current[timerId];
     }
+
+    // Cancel scheduled notifications and reset halfway alert for this specific timer
+    cancelTimerNotifications(timerId);
+    delete halfwayAlerts.current[timerId];
 
     const updatedTimers = timers.map((timer) => {
       if (timer.id === timerId) {
@@ -192,6 +378,10 @@ export default function TimersScreen() {
             clearInterval(timerRefs.current[timerId]);
             delete timerRefs.current[timerId];
           }
+
+          // Clean up notifications and halfway alerts for this specific timer
+          cancelTimerNotifications(timerId);
+          delete halfwayAlerts.current[timerId];
 
           // Remove timer from the list
           const updatedTimers = timers.filter((timer) => timer.id !== timerId);
@@ -292,6 +482,7 @@ export default function TimersScreen() {
   useFocusEffect(
     useCallback(() => {
       loadTimers();
+      requestNotificationPermissions();
     }, [])
   );
 
@@ -299,6 +490,10 @@ export default function TimersScreen() {
     return () => {
       // Cleanup intervals on unmount
       Object.values(timerRefs.current).forEach(clearInterval);
+      // Cleanup all notifications on unmount
+      Object.keys(notificationIds.current).forEach((timerId) => {
+        cancelTimerNotifications(timerId);
+      });
     };
   }, []);
 
@@ -321,6 +516,19 @@ export default function TimersScreen() {
               color="#ffffff"
             />
           </Pressable>
+
+          {/* Notification Permission Status */}
+          {!notificationPermission && (
+            <Pressable
+              style={styles.notificationWarning}
+              onPress={requestNotificationPermissions}
+            >
+              <Ionicons name="notifications-off" size={14} color="#ff6b6b" />
+              <Text style={styles.notificationWarningText}>
+                Tap to enable notifications for timer alerts
+              </Text>
+            </Pressable>
+          )}
 
           {/* Filter Dropdown */}
           {showFilterDropdown && (
@@ -435,6 +643,19 @@ export default function TimersScreen() {
             color="#ffffff"
           />
         </Pressable>
+
+        {/* Notification Permission Status */}
+        {!notificationPermission && (
+          <Pressable
+            style={styles.notificationWarning}
+            onPress={requestNotificationPermissions}
+          >
+            <Ionicons name="notifications-off" size={14} color="#ff6b6b" />
+            <Text style={styles.notificationWarningText}>
+              Tap to enable notifications for timer alerts
+            </Text>
+          </Pressable>
+        )}
 
         {/* Filter Dropdown */}
         {showFilterDropdown && (
@@ -564,7 +785,17 @@ export default function TimersScreen() {
                 <View key={timer.id} style={styles.timerCard}>
                   <View style={styles.timerHeader}>
                     <View style={styles.timerInfo}>
-                      <Text style={styles.timerName}>{timer.name}</Text>
+                      <View style={styles.timerNameContainer}>
+                        <Text style={styles.timerName}>{timer.name}</Text>
+                        {timer.halfwayAlert && (
+                          <Ionicons
+                            name="notifications"
+                            size={14}
+                            color="#888888"
+                            style={styles.alertIcon}
+                          />
+                        )}
+                      </View>
                       <Text style={styles.timerTime}>
                         {formatTime(timer.remainingTime)}
                       </Text>
@@ -728,11 +959,19 @@ const styles = StyleSheet.create({
   timerInfo: {
     flex: 1,
   },
+  timerNameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   timerName: {
     fontSize: 16,
     fontWeight: "600",
     color: "#ffffff",
-    marginBottom: 4,
+    marginRight: 8,
+  },
+  alertIcon: {
+    marginLeft: 4,
   },
   timerTime: {
     fontSize: 20,
@@ -900,6 +1139,24 @@ const styles = StyleSheet.create({
   clearFilterText: {
     color: "#ff6b6b",
     fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
+  },
+  notificationWarning: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2a1a1a",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#ff6b6b",
+  },
+  notificationWarningText: {
+    color: "#ff6b6b",
+    fontSize: 12,
     fontWeight: "500",
     flex: 1,
   },

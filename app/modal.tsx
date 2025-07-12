@@ -8,6 +8,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   TextInput,
 } from "react-native";
 
@@ -121,6 +122,24 @@ export default function AddTimerModal() {
           </View>
         </View>
 
+        <View style={styles.inputContainer}>
+          <View style={styles.switchContainer}>
+            <View style={styles.switchLabelContainer}>
+              <Text style={styles.label}>Halfway Alert</Text>
+              <Text style={styles.switchDescription}>
+                Get notified when 50% of timer duration is reached
+              </Text>
+            </View>
+            <Switch
+              value={halfwayAlert}
+              onValueChange={setHalfwayAlert}
+              trackColor={{ false: "#333333", true: "#666666" }}
+              thumbColor={halfwayAlert ? "#ffffff" : "#888888"}
+              ios_backgroundColor="#333333"
+            />
+          </View>
+        </View>
+
         <View style={styles.buttonContainer}>
           <Pressable style={styles.button} onPress={() => router.back()}>
             <Text style={styles.buttonText}>Cancel</Text>
@@ -218,5 +237,21 @@ const styles = StyleSheet.create({
   categoryButtonTextSelected: {
     color: "#FFFFFF",
     fontWeight: "bold",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  switchLabelContainer: {
+    flex: 1,
+    marginRight: 16,
+  },
+  switchDescription: {
+    fontSize: 12,
+    color: "#888888",
+    marginTop: 4,
+    lineHeight: 16,
   },
 });
