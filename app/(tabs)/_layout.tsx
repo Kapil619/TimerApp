@@ -39,6 +39,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Timers",
+          headerTitle: "Kapil Timer Assignment",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="time-outline" color={color} />
           ),
