@@ -648,18 +648,18 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     marginBottom: 16,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#000000",
     borderRadius: 16,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "#1a1a1a",
+    borderColor: "#333333",
   },
   categoryHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    backgroundColor: "#111111",
+    backgroundColor: "#000000",
   },
   categoryHeaderContent: {
     flexDirection: "row",
@@ -675,7 +675,7 @@ const styles = StyleSheet.create({
   categoryCount: {
     fontSize: 12,
     color: "#888888",
-    backgroundColor: "#2a2a2a",
+    backgroundColor: "#333333",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -689,17 +689,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#000000",
   },
   bulkButton: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#333333",
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     flex: 1,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#2a2a2a",
+    borderColor: "#555555",
   },
   bulkButtonText: {
     color: "#ffffff",
@@ -710,14 +710,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
     gap: 12,
-    backgroundColor: "#0a0a0a",
+    backgroundColor: "#000000",
   },
   timerCard: {
-    backgroundColor: "#151515",
+    backgroundColor: "#000000",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2a2a",
+    borderColor: "#333333",
   },
   timerHeader: {
     flexDirection: "row",
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#aaaaaa",
     textTransform: "capitalize",
-    backgroundColor: "#2a2a2a",
+    backgroundColor: "#333333",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
   },
   progressBarContainer: {
     height: 4,
-    backgroundColor: "#2a2a2a",
+    backgroundColor: "#333333",
     borderRadius: 2,
     marginVertical: 12,
     overflow: "hidden",
@@ -779,16 +779,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   startButton: {
-    backgroundColor: "#22c55e",
+    backgroundColor: "#ffffff",
   },
   pauseButton: {
-    backgroundColor: "#f59e0b",
+    backgroundColor: "#888888",
   },
   resetButton: {
-    backgroundColor: "#6b7280",
+    backgroundColor: "#666666",
   },
   deleteButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: "#444444",
   },
   controlButtonText: {
     color: "#000000",
