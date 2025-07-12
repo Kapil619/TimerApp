@@ -1,4 +1,4 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -290,11 +290,11 @@ export default function TimersScreen() {
             style={styles.filterToggle}
             onPress={() => setShowFilterDropdown(!showFilterDropdown)}
           >
-            <FontAwesome name="filter" size={16} color="#ffffff" />
+            <Ionicons name="funnel" size={16} color="#ffffff" />
             <Text style={styles.filterToggleText}>
               {categoryFilter === "All" ? "All Categories" : categoryFilter}
             </Text>
-            <FontAwesome
+            <Ionicons
               name={showFilterDropdown ? "chevron-up" : "chevron-down"}
               size={14}
               color="#ffffff"
@@ -317,7 +317,7 @@ export default function TimersScreen() {
                   ]}
                   onPress={() => applyFilter("All")}
                 >
-                  <FontAwesome
+                  <Ionicons
                     name="list"
                     size={14}
                     color={categoryFilter === "All" ? "#000000" : "#ffffff"}
@@ -330,9 +330,9 @@ export default function TimersScreen() {
                     ]}
                   >
                     All Categories
-                  </Text>
+                  </Text>{" "}
                   {categoryFilter === "All" && (
-                    <FontAwesome name="check" size={14} color="#000000" />
+                    <Ionicons name="checkmark" size={14} color="#000000" />
                   )}
                 </Pressable>
 
@@ -346,8 +346,8 @@ export default function TimersScreen() {
                     ]}
                     onPress={() => applyFilter(category)}
                   >
-                    <FontAwesome
-                      name="tag"
+                    <Ionicons
+                      name="pricetag"
                       size={14}
                       color={
                         categoryFilter === category ? "#000000" : "#ffffff"
@@ -363,7 +363,7 @@ export default function TimersScreen() {
                       {category}
                     </Text>
                     {categoryFilter === category && (
-                      <FontAwesome name="check" size={14} color="#000000" />
+                      <Ionicons name="checkmark" size={14} color="#000000" />
                     )}
                   </Pressable>
                 ))}
@@ -373,7 +373,7 @@ export default function TimersScreen() {
                     style={styles.clearFilterOption}
                     onPress={clearFilter}
                   >
-                    <FontAwesome name="times" size={14} color="#ff6b6b" />
+                    <Ionicons name="close" size={14} color="#ff6b6b" />
                     <Text style={styles.clearFilterText}>Clear Filter</Text>
                   </Pressable>
                 )}
@@ -404,11 +404,11 @@ export default function TimersScreen() {
           style={styles.filterToggle}
           onPress={() => setShowFilterDropdown(!showFilterDropdown)}
         >
-          <FontAwesome name="filter" size={16} color="#ffffff" />
+          <Ionicons name="funnel" size={16} color="#ffffff" />
           <Text style={styles.filterToggleText}>
             {categoryFilter === "All" ? "All Categories" : categoryFilter}
           </Text>
-          <FontAwesome
+          <Ionicons
             name={showFilterDropdown ? "chevron-up" : "chevron-down"}
             size={14}
             color="#ffffff"
@@ -431,7 +431,7 @@ export default function TimersScreen() {
                 ]}
                 onPress={() => applyFilter("All")}
               >
-                <FontAwesome
+                <Ionicons
                   name="list"
                   size={14}
                   color={categoryFilter === "All" ? "#000000" : "#ffffff"}
@@ -445,7 +445,7 @@ export default function TimersScreen() {
                   All Categories
                 </Text>
                 {categoryFilter === "All" && (
-                  <FontAwesome name="check" size={14} color="#000000" />
+                  <Ionicons name="checkmark" size={14} color="#000000" />
                 )}
               </Pressable>
 
@@ -458,8 +458,8 @@ export default function TimersScreen() {
                   ]}
                   onPress={() => applyFilter(category)}
                 >
-                  <FontAwesome
-                    name="tag"
+                  <Ionicons
+                    name="pricetag"
                     size={14}
                     color={categoryFilter === category ? "#000000" : "#ffffff"}
                   />
@@ -473,7 +473,7 @@ export default function TimersScreen() {
                     {category}
                   </Text>
                   {categoryFilter === category && (
-                    <FontAwesome name="check" size={14} color="#000000" />
+                    <Ionicons name="checkmark" size={14} color="#000000" />
                   )}
                 </Pressable>
               ))}
@@ -483,7 +483,7 @@ export default function TimersScreen() {
                   style={styles.clearFilterOption}
                   onPress={clearFilter}
                 >
-                  <FontAwesome name="times" size={14} color="#ff6b6b" />
+                  <Ionicons name="close" size={14} color="#ff6b6b" />
                   <Text style={styles.clearFilterText}>Clear Filter</Text>
                 </Pressable>
               )}
@@ -504,7 +504,7 @@ export default function TimersScreen() {
                 ({categoryTimers.length})
               </Text>
             </View>
-            <FontAwesome
+            <Ionicons
               name={
                 collapsedCategories.includes(category)
                   ? "chevron-down"
@@ -567,7 +567,7 @@ export default function TimersScreen() {
                         style={[styles.controlButton, styles.startButton]}
                         onPress={() => startTimer(timer.id)}
                       >
-                        <FontAwesome name="play" size={12} color="#000000" />
+                        <Ionicons name="play" size={12} color="#000000" />
                         <Text style={styles.controlButtonText}>Start</Text>
                       </Pressable>
                     ) : timer.status === "running" ? (
@@ -575,7 +575,7 @@ export default function TimersScreen() {
                         style={[styles.controlButton, styles.pauseButton]}
                         onPress={() => pauseTimer(timer.id)}
                       >
-                        <FontAwesome name="pause" size={12} color="#000000" />
+                        <Ionicons name="pause" size={12} color="#000000" />
                         <Text style={styles.controlButtonText}>Pause</Text>
                       </Pressable>
                     ) : null}
@@ -584,7 +584,7 @@ export default function TimersScreen() {
                       style={[styles.controlButton, styles.resetButton]}
                       onPress={() => resetTimer(timer.id)}
                     >
-                      <FontAwesome name="refresh" size={12} color="#000000" />
+                      <Ionicons name="refresh" size={12} color="#000000" />
                       <Text style={styles.controlButtonText}>Reset</Text>
                     </Pressable>
                   </View>

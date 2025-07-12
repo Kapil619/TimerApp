@@ -1,4 +1,4 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Ionicons } from "@expo/vector-icons";
 import { Link, Tabs } from "expo-router";
 import React from "react";
 import { Pressable } from "react-native";
@@ -8,10 +8,10 @@ import { useColorScheme } from "@/components/useColorScheme";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
+  name: React.ComponentProps<typeof Ionicons>["name"];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <Ionicons size={28} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
@@ -40,14 +40,14 @@ export default function TabLayout() {
         options={{
           title: "Timers",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="clock-o" color={color} />
+            <TabBarIcon name="time-outline" color={color} />
           ),
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
                 {({ pressed }) => (
-                  <FontAwesome
-                    name="plus"
+                  <Ionicons
+                    name="add"
                     size={25}
                     color="#ffffff"
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
@@ -63,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="history" color={color} />
+            <TabBarIcon name="list-outline" color={color} />
           ),
         }}
       />
