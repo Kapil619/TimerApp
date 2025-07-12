@@ -28,6 +28,8 @@ interface HistoryItem {
 export default function TimersScreen() {
   const [timers, setTimers] = useState<Timer[]>([]);
   const [collapsedCategories, setCollapsedCategories] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string>("All");
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const timerRefs = useRef<{ [key: string]: any }>({});
 
   const loadTimers = async () => {
@@ -53,6 +55,12 @@ export default function TimersScreen() {
           ...new Set(loadedTimers.map((timer: Timer) => timer.category)),
         ] as string[];
         setCollapsedCategories(categories);
+      }
+
+      // Load category filter
+      const savedFilter = await AsyncStorage.getItem("categoryFilter");
+      if (savedFilter) {
+        setCategoryFilter(savedFilter);
       }
     } catch (error) {
       console.error("Failed to load timers:", error);
@@ -196,6 +204,31 @@ export default function TimersScreen() {
     });
   };
 
+  const applyFilter = async (filter: string) => {
+    try {
+      await AsyncStorage.setItem("categoryFilter", filter);
+      setCategoryFilter(filter);
+      setShowFilterDropdown(false);
+    } catch (error) {
+      console.error("Failed to save filter:", error);
+    }
+  };
+
+  const clearFilter = async () => {
+    try {
+      await AsyncStorage.removeItem("categoryFilter");
+      setCategoryFilter("All");
+      setShowFilterDropdown(false);
+    } catch (error) {
+      console.error("Failed to clear filter:", error);
+    }
+  };
+
+  const getAvailableCategories = () => {
+    const categories = [...new Set(timers.map((timer) => timer.category))];
+    return categories;
+  };
+
   const toggleCategory = (category: string) => {
     setCollapsedCategories((prev) =>
       prev.includes(category)
@@ -218,8 +251,13 @@ export default function TimersScreen() {
     );
   };
 
-  // Group timers by category
-  const groupedTimers = timers.reduce((acc, timer) => {
+  // Group timers by category and apply filter
+  const filteredTimers =
+    categoryFilter === "All"
+      ? timers
+      : timers.filter((timer) => timer.category === categoryFilter);
+
+  const groupedTimers = filteredTimers.reduce((acc, timer) => {
     if (!acc[timer.category]) {
       acc[timer.category] = [];
     }
@@ -243,9 +281,113 @@ export default function TimersScreen() {
   if (Object.keys(groupedTimers).length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.emptyText}>No timers yet!</Text>
+        {/* Filter Dropdown Toggle */}
+        <View style={styles.filterSection}>
+          <Pressable
+            style={styles.filterToggle}
+            onPress={() => setShowFilterDropdown(!showFilterDropdown)}
+          >
+            <FontAwesome name="filter" size={16} color="#ffffff" />
+            <Text style={styles.filterToggleText}>
+              {categoryFilter === "All" ? "All Categories" : categoryFilter}
+            </Text>
+            <FontAwesome
+              name={showFilterDropdown ? "chevron-up" : "chevron-down"}
+              size={14}
+              color="#ffffff"
+            />
+          </Pressable>
+
+          {/* Filter Dropdown */}
+          {showFilterDropdown && (
+            <>
+              {/* Backdrop */}
+              <Pressable
+                style={styles.backdrop}
+                onPress={() => setShowFilterDropdown(false)}
+              />
+              <View style={styles.filterDropdown}>
+                <Pressable
+                  style={[
+                    styles.filterOption,
+                    categoryFilter === "All" && styles.filterOptionSelected,
+                  ]}
+                  onPress={() => applyFilter("All")}
+                >
+                  <FontAwesome
+                    name="list"
+                    size={14}
+                    color={categoryFilter === "All" ? "#000000" : "#ffffff"}
+                  />
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      categoryFilter === "All" &&
+                        styles.filterOptionTextSelected,
+                    ]}
+                  >
+                    All Categories
+                  </Text>
+                  {categoryFilter === "All" && (
+                    <FontAwesome name="check" size={14} color="#000000" />
+                  )}
+                </Pressable>
+
+                {getAvailableCategories().map((category) => (
+                  <Pressable
+                    key={category}
+                    style={[
+                      styles.filterOption,
+                      categoryFilter === category &&
+                        styles.filterOptionSelected,
+                    ]}
+                    onPress={() => applyFilter(category)}
+                  >
+                    <FontAwesome
+                      name="tag"
+                      size={14}
+                      color={
+                        categoryFilter === category ? "#000000" : "#ffffff"
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.filterOptionText,
+                        categoryFilter === category &&
+                          styles.filterOptionTextSelected,
+                      ]}
+                    >
+                      {category}
+                    </Text>
+                    {categoryFilter === category && (
+                      <FontAwesome name="check" size={14} color="#000000" />
+                    )}
+                  </Pressable>
+                ))}
+
+                {categoryFilter !== "All" && (
+                  <Pressable
+                    style={styles.clearFilterOption}
+                    onPress={clearFilter}
+                  >
+                    <FontAwesome name="times" size={14} color="#ff6b6b" />
+                    <Text style={styles.clearFilterText}>Clear Filter</Text>
+                  </Pressable>
+                )}
+              </View>
+            </>
+          )}
+        </View>
+
+        <Text style={styles.emptyText}>
+          {categoryFilter === "All"
+            ? "No timers yet!"
+            : `No timers in "${categoryFilter}" category`}
+        </Text>
         <Text style={styles.emptySubText}>
-          Tap the + button to create your first timer
+          {categoryFilter === "All"
+            ? "Tap the + button to create your first timer"
+            : "Clear the filter or add timers to this category"}
         </Text>
       </View>
     );
@@ -253,6 +395,100 @@ export default function TimersScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Filter Dropdown Toggle */}
+      <View style={styles.filterSection}>
+        <Pressable
+          style={styles.filterToggle}
+          onPress={() => setShowFilterDropdown(!showFilterDropdown)}
+        >
+          <FontAwesome name="filter" size={16} color="#ffffff" />
+          <Text style={styles.filterToggleText}>
+            {categoryFilter === "All" ? "All Categories" : categoryFilter}
+          </Text>
+          <FontAwesome
+            name={showFilterDropdown ? "chevron-up" : "chevron-down"}
+            size={14}
+            color="#ffffff"
+          />
+        </Pressable>
+
+        {/* Filter Dropdown */}
+        {showFilterDropdown && (
+          <>
+            {/* Backdrop */}
+            <Pressable
+              style={styles.backdrop}
+              onPress={() => setShowFilterDropdown(false)}
+            />
+            <View style={styles.filterDropdown}>
+              <Pressable
+                style={[
+                  styles.filterOption,
+                  categoryFilter === "All" && styles.filterOptionSelected,
+                ]}
+                onPress={() => applyFilter("All")}
+              >
+                <FontAwesome
+                  name="list"
+                  size={14}
+                  color={categoryFilter === "All" ? "#000000" : "#ffffff"}
+                />
+                <Text
+                  style={[
+                    styles.filterOptionText,
+                    categoryFilter === "All" && styles.filterOptionTextSelected,
+                  ]}
+                >
+                  All Categories
+                </Text>
+                {categoryFilter === "All" && (
+                  <FontAwesome name="check" size={14} color="#000000" />
+                )}
+              </Pressable>
+
+              {getAvailableCategories().map((category) => (
+                <Pressable
+                  key={category}
+                  style={[
+                    styles.filterOption,
+                    categoryFilter === category && styles.filterOptionSelected,
+                  ]}
+                  onPress={() => applyFilter(category)}
+                >
+                  <FontAwesome
+                    name="tag"
+                    size={14}
+                    color={categoryFilter === category ? "#000000" : "#ffffff"}
+                  />
+                  <Text
+                    style={[
+                      styles.filterOptionText,
+                      categoryFilter === category &&
+                        styles.filterOptionTextSelected,
+                    ]}
+                  >
+                    {category}
+                  </Text>
+                  {categoryFilter === category && (
+                    <FontAwesome name="check" size={14} color="#000000" />
+                  )}
+                </Pressable>
+              ))}
+
+              {categoryFilter !== "All" && (
+                <Pressable
+                  style={styles.clearFilterOption}
+                  onPress={clearFilter}
+                >
+                  <FontAwesome name="times" size={14} color="#ff6b6b" />
+                  <Text style={styles.clearFilterText}>Clear Filter</Text>
+                </Pressable>
+              )}
+            </View>
+          </>
+        )}
+      </View>
+
       {Object.entries(groupedTimers).map(([category, categoryTimers]) => (
         <View key={category} style={styles.categoryContainer}>
           <Pressable
@@ -523,5 +759,108 @@ const styles = StyleSheet.create({
     color: "#000000",
     fontSize: 12,
     fontWeight: "600",
+  },
+  filterIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1a1a1a",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#333333",
+  },
+  filterText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
+  },
+  filterSection: {
+    marginBottom: 16,
+    position: "relative",
+    zIndex: 1000,
+  },
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    left: -16,
+    right: -16,
+    bottom: -1000,
+    zIndex: 999,
+  },
+  filterToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1a1a1a",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#333333",
+  },
+  filterToggleText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
+  },
+  filterDropdown: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
+    backgroundColor: "#1a1a1a",
+    borderRadius: 8,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#333333",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 1001,
+  },
+  filterOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333333",
+  },
+  filterOptionSelected: {
+    backgroundColor: "#ffffff",
+  },
+  filterOptionText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
+  },
+  filterOptionTextSelected: {
+    color: "#000000",
+    fontWeight: "600",
+  },
+  clearFilterOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    backgroundColor: "#2a1a1a",
+    borderTopWidth: 1,
+    borderTopColor: "#444444",
+  },
+  clearFilterText: {
+    color: "#ff6b6b",
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
   },
 });
