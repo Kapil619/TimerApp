@@ -1,4 +1,4 @@
-import { Timer } from './storageManager';
+import { Timer } from './types';
 import { StorageManager } from './storageManager';
 import { NotificationManager } from './notificationManager';
 

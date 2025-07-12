@@ -13,7 +13,8 @@ import {
 import { useToast } from "@/contexts/ToastContext";
 import { modalStyles } from "@/utils/styles";
 import { Text, View } from "react-native";
-import { Timer, StorageManager } from "@/utils/storageManager";
+import { StorageManager } from "@/utils/storageManager";
+import { Timer } from "@/utils/types";
 
 const CATEGORIES = ["Workout", "Study", "Break", "Other"];
 

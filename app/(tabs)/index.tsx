@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useToast } from "@/contexts/ToastContext";
 import { NotificationManager } from "@/utils/notificationManager";
-import { StorageManager, Timer } from "@/utils/storageManager";
+import { StorageManager } from "@/utils/storageManager";
 import { indexStyles } from "@/utils/styles";
 import { TimerManager } from "@/utils/timerManager";
+import { Timer } from "@/utils/types";
 
 export default function TimersScreen() {
   const [timers, setTimers] = useState<Timer[]>([]);

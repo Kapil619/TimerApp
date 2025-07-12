@@ -3,9 +3,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as FileSystem from "expo-file-system";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView } from "react-native";
-import { HistoryItem, StorageManager } from "@/utils/storageManager";
+import { StorageManager } from "@/utils/storageManager";
 import { historyStyles } from "@/utils/styles";
 import { Text, View } from "react-native";
+import { HistoryItem, ExportData, CategorySummary } from "@/utils/types";
 
 export default function HistoryScreen() {
   const [history, setHistory] = useState<HistoryItem[]>([]);

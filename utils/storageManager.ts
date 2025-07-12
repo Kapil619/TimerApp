@@ -1,23 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export interface Timer {
-    id: string;
-    name: string;
-    duration: number;
-    category: string;
-    status: "stopped" | "running" | "paused" | "completed";
-    remainingTime: number;
-    originalDuration: number;
-    halfwayAlert: boolean;
-}
-
-export interface HistoryItem {
-    id: string;
-    name: string;
-    category: string;
-    completedAt: string;
-    originalDuration: number;
-}
+import { Timer, HistoryItem } from './types';
 
 export class StorageManager {
     static async loadTimers(): Promise<Timer[]> {

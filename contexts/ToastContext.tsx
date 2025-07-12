@@ -6,15 +6,11 @@ import React, {
   useState,
 } from "react";
 import { Animated, StyleSheet, Text } from "react-native";
+import { ToastOptions } from "@/utils/types";
 
 interface ToastContextType {
   showToast: (message: string, options?: ToastOptions) => void;
   hideToast: () => void;
-}
-
-interface ToastOptions {
-  duration?: number;
-  position?: "top" | "bottom";
 }
 
 interface ToastState {
