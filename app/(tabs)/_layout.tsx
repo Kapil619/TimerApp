@@ -5,7 +5,6 @@ import { Pressable } from "react-native";
 
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -21,7 +20,16 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: "#ffffff",
+        tabBarInactiveTintColor: "#666666",
+        tabBarStyle: {
+          backgroundColor: "#000000",
+          borderTopColor: "#333333",
+        },
+        headerStyle: {
+          backgroundColor: "#000000",
+        },
+        headerTintColor: "#ffffff",
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
@@ -39,9 +47,9 @@ export default function TabLayout() {
               <Pressable>
                 {({ pressed }) => (
                   <FontAwesome
-                    name="info-circle"
+                    name="plus"
                     size={25}
-                    color={Colors[colorScheme ?? "light"].text}
+                    color="#ffffff"
                     style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
                   />
                 )}
